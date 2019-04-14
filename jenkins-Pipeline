@@ -1,0 +1,22 @@
+
+node ('k8s-test-01'){
+   def mvnHome
+   stage('Preparation') { 
+        git url: 'https://github.com/redgra0315/k8s.git'
+   }
+   stage('Build') {
+        echo "3.Build Docker Image Stage"
+        sh "docker build -t nginx:${build} -f Dockerfile ."
+        sh "docker tag nginx:${build}  redgra0315/nginx:${build}"
+   }
+   stage("push images"){
+        sh "docker login -u redgra0315 -p peng452600"
+        sh "docker push redgra0315/nginx:${build}"
+   }
+   stage("create k8s server"){
+       sh "kubectl  apply -f /opt/pod/nginx/nginx.yaml"
+   }
+   stage("create k8s ingress"){
+       sh "kubectl  apply -f /opt/pod/nginx/ingress.yaml"
+   }
+}
